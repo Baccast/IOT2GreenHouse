@@ -2,7 +2,7 @@
 import RPi.GPIO as GPIO
 import time
 import Adafruit_DHT
-from adc0832 import ADC0832  
+from ADC0832 import ADC0832  
 
 # GPIO Pins
 MOISTURE_SENSOR_PIN = 26
