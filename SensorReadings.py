@@ -63,7 +63,6 @@ def update_temperature():
 
             print(f'Light Status: {"Dark" if res_light < 128 else "Light"}')
             print(f'Temperature (Celsius): {temperature_C:.2f}°C')
-            print(f'Temperature (Fahrenheit): {temperature_F:.2f}°F')
 
         time.sleep(0.2)
 
