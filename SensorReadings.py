@@ -44,8 +44,9 @@ def main():
                 # Read and print thermistor value
                 thermistor_value = read_thermistor()
                 # Convert thermistor value to temperature in degrees Celsius
-                temperature = (thermistor_value - 500) / 10
-                print(f"Temperature: {temperature} degrees Celsius")
+                inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * math.log(Rt / R0)
+                temperature_C = 1.0 / inv_T - 273.15
+                print(f"Temperature: {temperature_C} degrees Celsius")
             
                 time.sleep(1)
             except Exception as e:
