@@ -34,7 +34,7 @@ def main():
             photoresistor_value = read_photoresistor()
             light_or_dark = None
             # Convert photoresistor value to either light or dark
-            if photoresistor_value > 200:
+            if photoresistor_value > 100:
                 light_or_dark = "light"
             else:
                 light_or_dark = "dark"
