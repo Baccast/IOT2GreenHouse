@@ -59,7 +59,7 @@ def getResult():     # get ADC result
 def loop():
 	while True:
 		res = getResult()
-		print 'res = %d' % res
+		print('res = %d' % res)
 		time.sleep(0.4)
 
 if __name__ == '__main__':
