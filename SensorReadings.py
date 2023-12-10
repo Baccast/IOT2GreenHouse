@@ -42,34 +42,29 @@ def temperature_from_resistance(Rt):
 
 def update_temperature():
     while True:
-        # Read temperature and potentiometer values from ADC channels
-        res_temp = ADC0832.getADC(0)  # Temperature sensor connected to channel 0
-        res_pot = ADC0832.getADC(1)   # Potentiometer connected to channel 1
+        # Read light (potentiometer) and temperature (thermistor) values from ADC channels
+        res_light = ADC0832.getADC(0)  # Light sensor (potentiometer) connected to channel 0
+        res_temp = ADC0832.getADC(1)   # Temperature sensor (thermistor) connected to channel 1
 
-        Vr_temp = 3.3 * float(res_temp) / 255
-        Vr_pot = 3.3 * float(res_pot) / 255
+        # Map potentiometer value to temperature threshold
+        temperature_threshold = map_value(res_light, POT_MIN, POT_MAX, 50, -50)  # Inverted mapping
 
-        Rt_temp = 10000 * Vr_temp / (3.3 - Vr_temp)
+        # Ensure the threshold doesn't exceed the specified range
+        temperature_threshold = max(-50, min(50, temperature_threshold))
 
+        print(f'Light Status: {"Dark" if res_light < 128 else "Light"}')
+        
         # Calculate temperature in Celsius
+        Vr_temp = 3.3 * float(res_temp) / 255
+        Rt_temp = 10000 * Vr_temp / (3.3 - Vr_temp)
         temperature_C = temperature_from_resistance(Rt_temp)
 
         if temperature_C is not None:
             temperature_F = (temperature_C * 9/5) + 32  # Convert to Fahrenheit
-
-            # Map potentiometer value to temperature threshold
-            temperature_threshold = map_value(res_pot, POT_MIN, POT_MAX, 50, -50)  # Inverted mapping
-
-            # Ensure the threshold doesn't exceed the specified range
-            temperature_threshold = max(-50, min(50, temperature_threshold))
-
             print(f'Temperature (Celsius): {temperature_C:.2f}°C')
             print(f'Temperature (Fahrenheit): {temperature_F:.2f}°F')
 
             # Turn on both LEDs if it's dark
-            res_light = ADC0832.getADC(0)  # Photoresistor connected to channel 0
-
-            # Check the light level and update the labels
             if res_light < 128:
                 # Turn on both LEDs when it's dark
                 GPIO.output(LED1_PIN, GPIO.HIGH)
