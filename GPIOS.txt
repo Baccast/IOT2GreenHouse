@@ -1,0 +1,14 @@
+Moisture Sensor/DHT-11 Sensor Module: GPIO 26
+Photoresistor: Channel 0
+Thermistor: Channel 1
+Fan/DC Motor: A=GPIO 6 B=GPIO 13
+Relay Module: GPIO 4
+Led 1: GPIO 23
+Led 2: GPIO 24
+
+ADC Setup:
+	ADC_CS  = 11
+	ADC_CLK = 13
+	ADC_DIO = 12
+
+
