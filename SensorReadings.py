@@ -30,24 +30,26 @@ def main():
         ADC0832.setup()
 
         while True:
-            # Read and print photoresistor value
-            photoresistor_value = read_photoresistor()
-            light_or_dark = None
-            # Convert photoresistor value to either light or dark
-            if photoresistor_value > 100:
-                light_or_dark = "light"
-            else:
-                light_or_dark = "dark"
-            print(f"Light Status: {light_or_dark}")
+            try:
+                # Read and print photoresistor value
+                photoresistor_value = read_photoresistor()
+                light_or_dark = None
+                # Convert photoresistor value to either light or dark
+                if photoresistor_value > 100:
+                    light_or_dark = "light"
+                else:
+                    light_or_dark = "dark"
+                print(f"Light Status: {light_or_dark}")
 
-            # Read and print thermistor value
-            thermistor_value = read_thermistor()
-            # Convert thermistor value to temperature in degrees Celsius
-            temperature = (thermistor_value - 500) / 10
-            print(f"Temperature: {temperature} degrees Celsius")
+                # Read and print thermistor value
+                thermistor_value = read_thermistor()
+                # Convert thermistor value to temperature in degrees Celsius
+                temperature = (thermistor_value - 500) / 10
+                print(f"Temperature: {temperature} degrees Celsius")
             
-
-            time.sleep(1)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
 
     except KeyboardInterrupt:
         pass
