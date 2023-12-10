@@ -2,12 +2,23 @@
 import time
 import ADC0832
 import RPi.GPIO as GPIO
+import math
 
 # GPIO pin for photoresistor
 PHOTORESISTOR_PIN = 0
 
 # GPIO pin for thermistor
 THERMISTOR_PIN = 1
+
+def temperature_from_resistance(Rt):
+    try:
+        # Calculate temperature in Celsius using the Steinhart-Hart equation
+        inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * math.log(Rt / R0)
+        temperature_C = 1.0 / inv_T - 273.15
+        return temperature_C
+    except ValueError:
+        # Handle the case where math.log() receives an invalid argument
+        return None
 
 def read_photoresistor():
     try:
@@ -44,8 +55,8 @@ def main():
                 # Read and print thermistor value
                 thermistor_value = read_thermistor()
                 # Convert thermistor value to temperature in degrees Celsius
-                inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * math.log(Rt / R0)
-                temperature_C = 1.0 / inv_T - 273.15
+                Rt_temp = 3.3 * float(thermistor_value) / 255
+                temperature_C = temperature_from_resistance(Rt_temp)
                 print(f"Temperature: {temperature_C} degrees Celsius")
             
                 time.sleep(1)
