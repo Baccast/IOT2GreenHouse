@@ -3,6 +3,7 @@ import ADC0832
 import time
 import threading
 import RPi.GPIO as GPIO
+import math
 
 # Constants for the thermistor characteristics
 R0 = 10000  # Resistance at a known temperature (in ohms)
@@ -29,7 +30,7 @@ def map_value(value, from_min, from_max, to_min, to_max):
 def temperature_from_resistance(Rt):
     try:
         # Calculate temperature in Celsius using the Steinhart-Hart equation
-        inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * (Rt / R0)
+        inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * math.log(Rt / R0)
         temperature_C = 1.0 / inv_T - 273.15
         return temperature_C
     except ValueError:
