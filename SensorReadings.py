@@ -32,11 +32,20 @@ def main():
         while True:
             # Read and print photoresistor value
             photoresistor_value = read_photoresistor()
-            print(f"Photoresistor Value: {photoresistor_value}")
+            light_or_dark = None
+            # Convert photoresistor value to either light or dark
+            if photoresistor_value > 200:
+                light_or_dark = "light"
+            else:
+                light_or_dark = "dark"
+            print(f"Light Status: {light_or_dark}")
 
             # Read and print thermistor value
             thermistor_value = read_thermistor()
-            print(f"Thermistor Value: {thermistor_value}")
+            # Convert thermistor value to temperature in degrees Celsius
+            temperature = (thermistor_value - 500) / 10
+            print(f"Temperature: {temperature} degrees Celsius")
+            
 
             time.sleep(1)
 
