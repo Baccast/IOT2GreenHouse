@@ -21,8 +21,9 @@ def temperature_from_resistance(Rt):
         inv_T = 1.0 / (T0 + 273.15) + (1.0 / B) * math.log(Rt / R0)
         temperature_C = 1.0 / inv_T - 273.15
         return temperature_C
-    except ValueError:
+    except ValueError as e:
         # Handle the case where math.log() receives an invalid argument
+        print(f"Error in temperature calculation: {e}")
         return None
 
 def read_photoresistor():
@@ -30,16 +31,20 @@ def read_photoresistor():
         # Read photoresistor value from ADC channel 0
         photoresistor_value = ADC0832.getADC(PHOTORESISTOR_PIN)
         return photoresistor_value
-    except KeyboardInterrupt:
-        GPIO.cleanup()
+    except IOError as e:
+        # Handle ADC read error
+        print(f"Error reading photoresistor: {e}")
+        return None
 
 def read_thermistor():
     try:
         # Read thermistor value from ADC channel 1
         thermistor_value = ADC0832.getADC(THERMISTOR_PIN)
         return thermistor_value
-    except KeyboardInterrupt:
-        GPIO.cleanup()
+    except IOError as e:
+        # Handle ADC read error
+        print(f"Error reading thermistor: {e}")
+        return None
 
 def main():
     try:
@@ -47,26 +52,25 @@ def main():
 
         while True:
             try:
-                # Read and print photoresistor value
+                # Read photoresistor value
                 photoresistor_value = read_photoresistor()
-                light_or_dark = None
-                # Convert photoresistor value to either light or dark
-                if photoresistor_value > 100:
-                    light_or_dark = "light"
-                else:
-                    light_or_dark = "dark"
-                print(f"Light Status: {light_or_dark}")
+                if photoresistor_value is not None:
+                    light_or_dark = "light" if photoresistor_value > 100 else "dark"
+                    print(f"Light Status: {light_or_dark}")
 
-                # Read and print thermistor value
+                # Read thermistor value
                 thermistor_value = read_thermistor()
-                # Convert thermistor value to temperature in degrees Celsius
-                Rt_temp = 3.3 * float(thermistor_value) / 255
-                temperature_C = temperature_from_resistance(Rt_temp)
-                print(f"Temperature: {temperature_C} degrees Celsius")
-            
+                if thermistor_value is not None:
+                    # Convert thermistor value to temperature in degrees Celsius
+                    Rt_temp = 3.3 * float(thermistor_value) / 255
+                    temperature_C = temperature_from_resistance(Rt_temp)
+                    print(f"Temperature: {temperature_C:.2f} degrees Celsius")
+
                 time.sleep(1)
             except Exception as e:
                 print(f"Unexpected error: {e}")
+                GPIO.cleanup()  # Clean up GPIO on error
+                break
 
     except KeyboardInterrupt:
         pass
