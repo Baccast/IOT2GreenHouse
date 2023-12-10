@@ -4,6 +4,11 @@ import ADC0832
 import RPi.GPIO as GPIO
 import math
 
+# Constants for the thermistor characteristics
+R0 = 10000  # Resistance at a known temperature (in ohms)
+T0 = 25     # Known temperature in Celsius (adjust as needed)
+B = 3950    # Beta coefficient of the thermistor (adjust as needed)
+
 # GPIO pin for photoresistor
 PHOTORESISTOR_PIN = 0
 
