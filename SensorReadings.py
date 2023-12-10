@@ -43,8 +43,8 @@ def temperature_from_resistance(Rt):
 def update_temperature():
     while True:
         # Read temperature and potentiometer values from ADC channels
-        res_temp = ADC0832.getADC(1)  # Temperature sensor connected to channel 0
-        res_pot = ADC0832.getADC(0)   # Potentiometer connected to channel 1
+        res_temp = ADC0832.getADC(0)  # Temperature sensor connected to channel 0
+        res_pot = ADC0832.getADC(1)   # Potentiometer connected to channel 1
 
         Vr_temp = 3.3 * float(res_temp) / 255
         Vr_pot = 3.3 * float(res_pot) / 255
