@@ -1,75 +1,49 @@
 #!/usr/bin/env python
-import RPi.GPIO as GPIO
 import time
-import Adafruit_DHT
-from ADC0832 import ADC0832  
+import ADC0832
+import RPi.GPIO as GPIO
 
-# GPIO Pins
-MOISTURE_SENSOR_PIN = 26
-PHOTORESISTOR_CHANNEL = 0
+# GPIO pin for photoresistor
+PHOTORESISTOR_PIN = 0
 
-# Sensor Thresholds
-TEMPERATURE_THRESHOLD = 25.0  # Adjust as needed
-SOIL_MOISTURE_THRESHOLD = 500  # Adjust as needed
+# GPIO pin for thermistor
+THERMISTOR_PIN = 1
 
-# ADC Configuration
-adc = ADC0832()
-
-def setup():
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
-
-def destroy():
-    GPIO.cleanup()
-
-def is_daytime():
-    # You may need to adjust this logic based on the actual behavior of your light sensor
-    # For example, if a lower ADC value indicates more light, you may need to modify the comparison.
-    light_value = adc.getResult(PHOTORESISTOR_CHANNEL)
-    return light_value > LIGHT_THRESHOLD
-
-def read_moisture():
-    # You may need to adjust this logic based on the behavior of your moisture sensor
-    return GPIO.input(MOISTURE_SENSOR_PIN)
-
-def read_temperature_humidity():
-    # Assuming DHT11 sensor, change to Adafruit_DHT.DHT22 for DHT22
-    sensor = Adafruit_DHT.DHT11
-    pin = 17  # GPIO pin where the DHT11 sensor is connected
-
-    humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-    return humidity, temperature
-
-if __name__ == '__main__':
-    setup()
+def read_photoresistor():
     try:
+        # Read photoresistor value from ADC channel 0
+        photoresistor_value = ADC0832.getADC(PHOTORESISTOR_PIN)
+        return photoresistor_value
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+
+def read_thermistor():
+    try:
+        # Read thermistor value from ADC channel 1
+        thermistor_value = ADC0832.getADC(THERMISTOR_PIN)
+        return thermistor_value
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+
+def main():
+    try:
+        ADC0832.setup()
+
         while True:
-            humidity, temperature = read_temperature_humidity()
-            moisture = read_moisture()
+            # Read and print photoresistor value
+            photoresistor_value = read_photoresistor()
+            print(f"Photoresistor Value: {photoresistor_value}")
 
-            print(f'Temperature: {temperature}°C, Humidity: {humidity}%, Moisture: {moisture}')
+            # Read and print thermistor value
+            thermistor_value = read_thermistor()
+            print(f"Thermistor Value: {thermistor_value}")
 
-            if is_daytime():
-                print('It is daytime.')
-
-                # Your logic for daytime conditions here
-                if temperature > TEMPERATURE_THRESHOLD:
-                    print('Temperature is too high. Activate fan for 30 seconds.')
-                    # Code to activate fan for 30 seconds goes here
-
-                if moisture < SOIL_MOISTURE_THRESHOLD:
-                    print('Soil moisture is too low. Activate water pump for 3 seconds.')
-                    # Code to activate water pump for 3 seconds goes here
-
-            else:
-                print('It is nighttime.')
-
-                # Your logic for nighttime conditions here
-                # For example, turn on grow lamp if it is dark
-                # Code to control grow lamp goes here
-
-            time.sleep(1)  # Adjust the sleep duration as needed
+            time.sleep(1)
 
     except KeyboardInterrupt:
-        destroy()
+        pass
+    finally:
+        GPIO.cleanup()
+
+if __name__ == '__main__':
+    main()
