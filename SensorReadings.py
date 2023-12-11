@@ -21,6 +21,7 @@ MQTT_USERNAME = "TUczvTkZxb5KZGoOnpKH"
 
 def setup():
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)  # Add this line to suppress warnings
     GPIO.setup(FAN_PIN_A, GPIO.OUT)
     GPIO.setup(FAN_PIN_B, GPIO.OUT)
     GPIO.setup(RELAY_PIN, GPIO.OUT)  # Relay Module control pin
@@ -28,6 +29,7 @@ def setup():
     GPIO.output(FAN_PIN_B, GPIO.HIGH)
     GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn off the water pump initially
     stop_fan()
+
 
 def stop_fan():
     GPIO.output(FAN_PIN_A, GPIO.HIGH)
