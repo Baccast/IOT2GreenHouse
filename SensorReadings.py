@@ -87,6 +87,12 @@ def read_temperature_and_humidity_sensor():
         print('Failed to read data from DHT-11 sensor')
         return None, None
 
+""" def read_soil_moisture():
+    res = ADC0832.getADC()
+    moisture = 255 - res
+    print(f'Soil Moisture: {moisture}')
+    return moisture """
+
 def read_light_status():
     light_value = ADC0832.getADC(0)  # Read from ADC0832 channel 0
     print(f'Light Status: {"Day" if light_value < 100 else "Night"}')
@@ -105,6 +111,7 @@ def main_loop():
 
     while True:
         temperature_C, humidity = read_temperature_and_humidity_sensor()
+        soil_moisture = read_soil_moisture()
         light_status = read_light_status()
 
         # Adjust this condition for fan control based on temperature
@@ -118,9 +125,9 @@ def main_loop():
         else:
             control_water_pump(0)  # Turn off the water pump
 
-        # Publish temperature, humidity, and light status to ThingsBoard
+        # Publish temperature, humidity, soil moisture, and light status to ThingsBoard
         if temperature_C is not None and humidity is not None:
-            payload = f'{{"temperature":{temperature_C},"humidity":{humidity},"light_status":"{light_status}"}}'
+            payload = f'{{"temperature":{temperature_C},"humidity":{humidity},"soil_moisture":{soil_moisture},"light_status":"{light_status}"}}'
             publish_to_thingsboard(mqtt_client, payload)
 
         time.sleep(2)
