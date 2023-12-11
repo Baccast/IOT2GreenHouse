@@ -1,21 +1,31 @@
-# IOT2GreenHouse
 Greenhouse Monitoring System
 Overview
 This project is a Greenhouse Monitoring System implemented on a Raspberry Pi. It integrates various sensors to monitor temperature, humidity, soil moisture, and light intensity. The system also controls actuators such as a water pump and a fan to maintain optimal greenhouse conditions.
 
 Components
 Raspberry Pi
-DHT-11 Temperature and Humidity Sensor
-ADC0832 Analog-to-Digital Converter for Light Intensity
-Relay Module for Water Pump
-DC Fan for Ventilation
+Sensor and Actuator Connections
+DHT-11 Temperature and Humidity Sensor: GPIO 26
+Photoresistor: ADC Channel 0
+Soil Moisture Sensor: ADC Channel 1
+DC Fan: A=GPIO 6, B=GPIO 13
+Relay Module: GPIO 4
+LED 1: GPIO 23
+LED 2: GPIO 24
+ADC0832 Setup
+ADC_CS: 11
+ADC_CLK: 13
+ADC_DIO: 12
 Setup Instructions
 Hardware Connections:
 
 Connect DHT-11 to GPIO pin 26 for temperature and humidity sensing.
-Connect ADC0832 to read light intensity from channel 0.
-Connect the Relay Module to control the water pump.
-Connect the DC Fan for ventilation.
+Connect the Photoresistor to ADC channel 0 for light intensity.
+Connect the Soil Moisture sensor to ADC channel 1 if available.
+Connect the DC Fan for ventilation with A to GPIO 6 and B to GPIO 13.
+Connect the Relay Module to GPIO 4 to control the water pump.
+Connect LED 1 to GPIO 23 and LED 2 to GPIO 24 for additional indicators.
+Setup ADC0832 with the provided pins (ADC_CS, ADC_CLK, ADC_DIO).
 Software Setup:
 
 Clone the repository to your Raspberry Pi.
