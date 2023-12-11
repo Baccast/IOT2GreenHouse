@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import RPi.GPIO as GPIO
 import Adafruit_DHT
+import ADC0832
 import time
 import paho.mqtt.client as mqtt
 
@@ -46,6 +47,7 @@ def setup():
     GPIO.output(FAN_PIN_B, GPIO.HIGH)
     GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn off the water pump initially
     stop_fan()
+    ADC0832.setup()
 
 def stop_fan():
     GPIO.output(FAN_PIN_A, GPIO.HIGH)
@@ -85,6 +87,11 @@ def read_temperature_sensor():
         print('Failed to read data from DHT-11 sensor')
         return None
 
+def read_light_status():
+    light_value = ADC0832.getADC(0)  # Read from ADC0832 channel 0
+    print(f'Light Status: {"Bright" if light_value < 100 else "Dark"}')
+    return "Bright" if light_value < 100 else "Dark"
+
 def control_water_pump(status=0):
     if status == 1:
         GPIO.output(RELAY_PIN, GPIO.LOW)  # Turn on the water pump
@@ -98,6 +105,7 @@ def main_loop():
 
     while True:
         temperature_C = read_temperature_sensor()
+        light_status = read_light_status()
 
         # Adjust this condition for fan control based on temperature
         if temperature_C is not None and temperature_C > 30:
@@ -110,9 +118,10 @@ def main_loop():
         else:
             control_water_pump(0)  # Turn off the water pump
 
-        # Publish temperature to ThingsBoard
+        # Publish temperature and light status to ThingsBoard
         if temperature_C is not None:
-            publish_to_thingsboard(mqtt_client, f'{{"temperature":{temperature_C}}}')
+            payload = f'{{"temperature":{temperature_C},"light_status":"{light_status}"}}'
+            publish_to_thingsboard(mqtt_client, payload)
 
         time.sleep(2)
 
