@@ -40,18 +40,22 @@ def control_fan(status=0, direction=1):
             GPIO.output(FAN_PIN_A, GPIO.LOW)
             GPIO.output(FAN_PIN_B, GPIO.HIGH)
 
-# Run the fan with cooldown
+# This function controls the fan with a cooldown period.
+# It turns the fan on, waits for 15 seconds, then turns the fan off.
+# The cooldown period prevents the fan from being turned on and off too frequently.
 def run_fan_with_cooldown():
     global fan_cooldown
 
     if not fan_cooldown:
         fan_cooldown = True
         control_fan(1)
-        time.sleep(30)
+        time.sleep(15)
         control_fan(0)
         fan_cooldown = False
 
-# Read temperature from sensor
+# This function reads the temperature from the sensor.
+# It uses the ADC0832 module to read the voltage across the thermistor.
+# It then calculates the resistance of the thermistor and uses this to calculate the temperature in degrees Celsius.
 def read_temperature_sensor():
     T25 = 25 + 273.15  # Convert to Kelvin
     R25 = 10000  # Resistance for degrees in Celsius
@@ -75,12 +79,6 @@ def read_temperature_sensor():
     Tc = round(Tc, 2)
     return Tc
 
-# Manual override to control the fan
-def manual_fan_control(status=False):
-    if status:
-        control_fan(1)
-    elif not fan_cooldown:
-        control_fan(0)
 
 # Main loop
 def main_loop():
