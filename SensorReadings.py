@@ -1,8 +1,8 @@
-#!/usr/bin/env python
 import RPi.GPIO as GPIO
 import Adafruit_DHT
 import ADC0832
 import time
+import subprocess
 
 # Motor Pins
 FAN_PIN_A = 6
@@ -12,6 +12,12 @@ RELAY_PIN = 4  # GPIO for the Relay Module
 
 # Global Variables
 fan_cooldown = False
+
+# MQTT configuration
+MQTT_HOST = "mqtt.thingsboard.cloud"
+MQTT_PORT = 1883
+MQTT_TOPIC = "v1/devices/me/telemetry"
+MQTT_USERNAME = "TUczvTkZxb5KZGoOnpKH"
 
 def setup():
     GPIO.setmode(GPIO.BCM)
@@ -74,6 +80,19 @@ def control_water_pump(status=0):
         GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn off the water pump
         print("Water Pump is Off")
 
+def send_to_thingsboard(data):
+    command = [
+        "mosquitto_pub",
+        "-d",
+        "-q", "1",
+        "-h", MQTT_HOST,
+        "-p", str(MQTT_PORT),
+        "-t", MQTT_TOPIC,
+        "-u", MQTT_USERNAME,
+        "-m", f"{data}"
+    ]
+    subprocess.run(command)
+
 def main_loop():
     while True:
         temperature_C = read_temperature_sensor()
@@ -88,6 +107,11 @@ def main_loop():
             control_water_pump(1)  # Turn on the water pump
         else:
             control_water_pump(0)  # Turn off the water pump
+
+        # Sending data to ThingsBoard
+        send_to_thingsboard(
+            f'{{"temperature": {temperature_C}, "humidity": {None}, "light_status": {None}, "moisture": {moisture_value}}}'
+        )
 
         time.sleep(2)
 
