@@ -89,8 +89,8 @@ def read_temperature_and_humidity_sensor():
 
 def read_light_status():
     light_value = ADC0832.getADC(0)  # Read from ADC0832 channel 0
-    print(f'Light Status: {"Bright" if light_value < 100 else "Dark"}')
-    return "Bright" if light_value < 100 else "Dark"
+    print(f'Light Status: {"Day" if light_value < 100 else "Night"}')
+    return "Day" if light_value < 100 else "Night"
 
 def control_water_pump(status=0):
     if status == 1:
