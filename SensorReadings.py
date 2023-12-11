@@ -2,12 +2,14 @@
 import os
 import RPi.GPIO as GPIO
 import ADC0832
+import Adafruit_DHT
 import time
 import math
 
 # Motor Pins
 FAN_PIN_A = 6
 FAN_PIN_B = 13
+MOISTURE_SENSOR_PIN = 26  # GPIO for the DHT-11 sensor
 
 # Global Variables
 fan_cooldown = False
@@ -21,14 +23,12 @@ def setup():
     stop_fan()
     ADC0832.setup()
 
-# Stop the fan
 def stop_fan():
     GPIO.output(FAN_PIN_A, GPIO.HIGH)
     GPIO.output(FAN_PIN_B, GPIO.HIGH)
 
-# Control fan operation
 def control_fan(status=0, direction=1):
-    if status == 0:  # stop
+    if status == 0:
         stop_fan()
         print("Fan is Off")
     else:
@@ -40,9 +40,6 @@ def control_fan(status=0, direction=1):
             GPIO.output(FAN_PIN_A, GPIO.LOW)
             GPIO.output(FAN_PIN_B, GPIO.HIGH)
 
-# This function controls the fan with a cooldown period.
-# It turns the fan on, waits for 15 seconds, then turns the fan off.
-# The cooldown period prevents the fan from being turned on and off too frequently.
 def run_fan_with_cooldown():
     global fan_cooldown
 
@@ -53,19 +50,15 @@ def run_fan_with_cooldown():
         control_fan(0)
         fan_cooldown = False
 
-# This function reads the temperature from the sensor.
-# It uses the ADC0832 module to read the voltage across the thermistor.
-# It then calculates the resistance of the thermistor and uses this to calculate the temperature in degrees Celsius.
 def read_temperature_sensor():
-    T25 = 25 + 273.15  # Convert to Kelvin
-    R25 = 10000  # Resistance for degrees in Celsius
+    T25 = 25 + 273.15
+    R25 = 10000
     B = 3455
 
     res = ADC0832.getADC(0)
     Vr = 3.3 * float(res) / 255
 
     try:
-        # Handle the case where Rt becomes zero
         Rt = (3.3 * 10000) / Vr - 10000
         if Rt == 0:
             Rt = 0.1
@@ -74,17 +67,28 @@ def read_temperature_sensor():
 
     ln = math.log(Rt / R25)
     Tk = 1 / ((ln / B) + (1 / T25))
-    Tc = Tk - 273.15  # Convert to Celsius
+    Tc = Tk - 273.15
 
     Tc = round(Tc, 2)
     return Tc
 
+def read_moisture_sensor():
+    # Use the Adafruit_DHT library to read data from the DHT-11 sensor
+    sensor = Adafruit_DHT.DHT11
+    humidity, temperature = Adafruit_DHT.read_retry(sensor, MOISTURE_SENSOR_PIN)
 
-# Main loop
+    if humidity is not None and temperature is not None:
+        print(f'Moisture: {humidity}%')
+        print(f'Temperature (DHT-11): {temperature:.2f}°C')
+    else:
+        print('Failed to read data from DHT-11 sensor')
+
 def main_loop():
     while True:
         temperature_C = read_temperature_sensor()
         print(f'Temperature (Celsius): {temperature_C:.2f}°C')
+
+        read_moisture_sensor()
 
         # Adjust this condition for fan control
         if temperature_C > 30:
