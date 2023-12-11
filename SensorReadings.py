@@ -76,16 +76,16 @@ def run_fan_with_cooldown():
         control_fan(0)
         fan_cooldown = False
 
-def read_temperature_sensor():
+def read_temperature_and_humidity_sensor():
     sensor = Adafruit_DHT.DHT11
-    _, temperature = Adafruit_DHT.read_retry(sensor, DHT_PIN)
+    humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT_PIN)
 
-    if temperature is not None:
-        print(f'Temperature (DHT-11): {temperature:.2f}°C')
-        return temperature
+    if humidity is not None and temperature is not None:
+        print(f'Temperature (DHT-11): {temperature:.2f}°C, Humidity: {humidity:.2f}%')
+        return temperature, humidity
     else:
         print('Failed to read data from DHT-11 sensor')
-        return None
+        return None, None
 
 def read_light_status():
     light_value = ADC0832.getADC(0)  # Read from ADC0832 channel 0
@@ -104,7 +104,7 @@ def main_loop():
     mqtt_client = setup_mqtt()
 
     while True:
-        temperature_C = read_temperature_sensor()
+        temperature_C, humidity = read_temperature_and_humidity_sensor()
         light_status = read_light_status()
 
         # Adjust this condition for fan control based on temperature
@@ -118,9 +118,9 @@ def main_loop():
         else:
             control_water_pump(0)  # Turn off the water pump
 
-        # Publish temperature and light status to ThingsBoard
-        if temperature_C is not None:
-            payload = f'{{"temperature":{temperature_C},"light_status":"{light_status}"}}'
+        # Publish temperature, humidity, and light status to ThingsBoard
+        if temperature_C is not None and humidity is not None:
+            payload = f'{{"temperature":{temperature_C},"humidity":{humidity},"light_status":"{light_status}"}}'
             publish_to_thingsboard(mqtt_client, payload)
 
         time.sleep(2)
