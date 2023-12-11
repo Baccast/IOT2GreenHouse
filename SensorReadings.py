@@ -7,6 +7,7 @@ import time
 FAN_PIN_A = 6
 FAN_PIN_B = 13
 RELAY_PIN = 4  # GPIO for the Relay Module
+DHT_PIN = 26
 
 # Global Variables
 fan_cooldown = False
@@ -51,7 +52,7 @@ def run_fan_with_cooldown():
 
 def read_temperature_sensor():
     sensor = Adafruit_DHT.DHT11
-    _, temperature = Adafruit_DHT.read_retry(sensor, FAN_PIN_A)
+    _, temperature = Adafruit_DHT.read_retry(sensor, DHT_PIN)
 
     if temperature is not None:
         print(f'Temperature (DHT-11): {temperature:.2f}°C')
