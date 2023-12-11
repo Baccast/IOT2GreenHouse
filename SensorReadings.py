@@ -1,27 +1,19 @@
+#!/usr/bin/env python
 import RPi.GPIO as GPIO
 import Adafruit_DHT
-import ADC0832
 import time
-import subprocess
 
 # Motor Pins
 FAN_PIN_A = 6
 FAN_PIN_B = 13
-MOISTURE_SENSOR_PIN = 1  # GPIO for the Soil Moisture Detector
 RELAY_PIN = 4  # GPIO for the Relay Module
 
 # Global Variables
 fan_cooldown = False
 
-# MQTT configuration
-MQTT_HOST = "mqtt.thingsboard.cloud"
-MQTT_PORT = 1883
-MQTT_TOPIC = "v1/devices/me/telemetry"
-MQTT_USERNAME = "TUczvTkZxb5KZGoOnpKH"
-
 def setup():
     GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)  # Add this line to suppress warnings
+    GPIO.setwarnings(False)  # Suppress GPIO warnings
     GPIO.setup(FAN_PIN_A, GPIO.OUT)
     GPIO.setup(FAN_PIN_B, GPIO.OUT)
     GPIO.setup(RELAY_PIN, GPIO.OUT)  # Relay Module control pin
@@ -29,7 +21,6 @@ def setup():
     GPIO.output(FAN_PIN_B, GPIO.HIGH)
     GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn off the water pump initially
     stop_fan()
-
 
 def stop_fan():
     GPIO.output(FAN_PIN_A, GPIO.HIGH)
@@ -60,7 +51,7 @@ def run_fan_with_cooldown():
 
 def read_temperature_sensor():
     sensor = Adafruit_DHT.DHT11
-    _, temperature = Adafruit_DHT.read_retry(sensor, MOISTURE_SENSOR_PIN)
+    _, temperature = Adafruit_DHT.read_retry(sensor, FAN_PIN_A)
 
     if temperature is not None:
         print(f'Temperature (DHT-11): {temperature:.2f}°C')
@@ -68,11 +59,6 @@ def read_temperature_sensor():
     else:
         print('Failed to read data from DHT-11 sensor')
         return None
-
-def read_soil_moisture_sensor():
-    moisture_value = ADC0832.getResult(MOISTURE_SENSOR_PIN)
-    print(f'Soil Moisture: {moisture_value}')
-    return moisture_value
 
 def control_water_pump(status=0):
     if status == 1:
@@ -82,38 +68,20 @@ def control_water_pump(status=0):
         GPIO.output(RELAY_PIN, GPIO.HIGH)  # Turn off the water pump
         print("Water Pump is Off")
 
-def send_to_thingsboard(data):
-    command = [
-        "mosquitto_pub",
-        "-d",
-        "-q", "1",
-        "-h", MQTT_HOST,
-        "-p", str(MQTT_PORT),
-        "-t", MQTT_TOPIC,
-        "-u", MQTT_USERNAME,
-        "-m", f"{data}"
-    ]
-    subprocess.run(command)
-
 def main_loop():
     while True:
         temperature_C = read_temperature_sensor()
-        moisture_value = read_soil_moisture_sensor()
 
-        # Adjust this condition for fan control based on temperature or moisture
+        # Adjust this condition for fan control based on temperature
         if temperature_C is not None and temperature_C > 30:
             run_fan_with_cooldown()
 
-        # Adjust this condition for water pump control based on soil moisture
-        if moisture_value is not None and moisture_value < 100:  # Adjust the threshold as needed
+        # Adjust this condition for water pump control based on any criteria you like
+        # For now, it simply checks if the temperature is above 30
+        if temperature_C is not None and temperature_C > 30:
             control_water_pump(1)  # Turn on the water pump
         else:
             control_water_pump(0)  # Turn off the water pump
-
-        # Sending data to ThingsBoard
-        send_to_thingsboard(
-            f'{{"temperature": {temperature_C}, "humidity": {None}, "light_status": {None}, "moisture": {moisture_value}}}'
-        )
 
         time.sleep(2)
 
@@ -126,4 +94,3 @@ if __name__ == '__main__':
         main_loop()
     except KeyboardInterrupt:
         cleanup()
-        ADC0832.destroy()
