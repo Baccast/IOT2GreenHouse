@@ -45,7 +45,7 @@ This project implements a Greenhouse Monitoring System on a Raspberry Pi. It int
    - Make sure you have the necessary credentials for ThingsBoard MQTT (host, port, and token).
 
 3. **Run the System:**
-   - Execute the main script using `python greenhouse_monitor.py`.
+   - Execute the main script using `python SensorReadings.py`.
    - The system will continuously monitor the environment and publish data to ThingsBoard.
 
 ## Additional Notes
