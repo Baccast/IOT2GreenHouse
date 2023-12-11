@@ -2,6 +2,7 @@
 import RPi.GPIO as GPIO
 import Adafruit_DHT
 import time
+import paho.mqtt.client as mqtt
 
 # Motor Pins
 FAN_PIN_A = 6
@@ -11,6 +12,29 @@ DHT_PIN = 26
 
 # Global Variables
 fan_cooldown = False
+
+# ThingsBoard MQTT settings
+TB_HOST = "mqtt.thingsboard.cloud"
+TB_PORT = 1883
+TB_TOKEN = "TUczvTkZxb5KZGoOnpKH"
+TB_TOPIC = "v1/devices/me/telemetry"
+
+def on_connect(client, userdata, flags, rc):
+    print(f"Connected with result code {rc}")
+
+def on_disconnect(client, userdata, rc):
+    print(f"Disconnected with result code {rc}")
+
+def setup_mqtt():
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    client.username_pw_set(username=TB_TOKEN)
+    client.connect(TB_HOST, TB_PORT, 60)
+    return client
+
+def publish_to_thingsboard(client, data):
+    client.publish(TB_TOPIC, data)
 
 def setup():
     GPIO.setmode(GPIO.BCM)
@@ -70,6 +94,8 @@ def control_water_pump(status=0):
         print("Water Pump is Off")
 
 def main_loop():
+    mqtt_client = setup_mqtt()
+
     while True:
         temperature_C = read_temperature_sensor()
 
@@ -83,6 +109,10 @@ def main_loop():
             control_water_pump(1)  # Turn on the water pump
         else:
             control_water_pump(0)  # Turn off the water pump
+
+        # Publish temperature to ThingsBoard
+        if temperature_C is not None:
+            publish_to_thingsboard(mqtt_client, f'{{"temperature":{temperature_C}}}')
 
         time.sleep(2)
 
